@@ -184,7 +184,7 @@ void sheet_slide(SHEET *sheet, int vx0, int vy0) {
 		sheet_refreshmap(ctl, vx0, vy0, vx0 + sheet->bxsize, vy0 + sheet->bysize, sheet->height);
 		sheet_refresh_sub(ctl, old_vx0, old_vy0, old_vx0 + sheet->bxsize, old_vy0 + sheet->bysize, 0, sheet->height - 1);
 		sheet_refresh_sub(ctl, vx0, vy0, vx0 + sheet->bxsize, vy0 + sheet->bysize, sheet->height, sheet->height);
-}
+	}
 }
 
 void sheet_free(SHEET *sheet) {

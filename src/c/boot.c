@@ -25,8 +25,8 @@ void Main() {
 	dword memtotal;
 	MEMORY_MANAGE *memman = (MEMORY_MANAGE *)ADR_MEMMAN;
 	SHEET_CTL *sheetctl;
-	SHEET *sheet_back, *sheet_mouse, *sheet_win;
-	byte *buf_back, *buf_mouse, *buf_win;
+	SHEET *sheet_back, *sheet_mouse, *sheet_win, *sheet_verwin;
+	byte *buf_back, *buf_mouse, *buf_win, *buf_verwin;
 	TIMER *timer1, *timer2, *timer3;
 
 	init_gdtidt();	// GDT/IDTの初期化
@@ -68,26 +68,32 @@ void Main() {
 	sheet_back	= sheet_alloc(sheetctl);
 	sheet_mouse	= sheet_alloc(sheetctl);
 	sheet_win	= sheet_alloc(sheetctl);
+	sheet_verwin= sheet_alloc(sheetctl);
 	buf_back	= (byte*)mem_alloc_4k(memman, binfo->scrnx * binfo->scrny);
 	buf_win		= (byte*)mem_alloc_4k(memman, WIN_XS * WIN_YS);
+	buf_verwin	= (byte*)mem_alloc_4k(memman, WIN_XS * WIN_YS);
 	sheet_setbuf(sheet_back, buf_back, binfo->scrnx, binfo->scrny, -1);
 	sheet_setbuf(sheet_mouse, buf_mouse, 16, 16, 99);
 	sheet_setbuf(sheet_win, buf_win, WIN_XS, WIN_YS, -1);
+	sheet_setbuf(sheet_verwin, buf_verwin, WIN_XS, WIN_YS, -1);
 
 	init_screen(buf_back, binfo->scrnx, binfo->scrny);
 	init_mouse_cursor(buf_mouse, 99);
 
 	make_window(buf_win, WIN_XS, WIN_YS, "window");
+	make_window(buf_verwin, WIN_XS, WIN_YS, "version");
 	make_textbox(sheet_win, 8, 28, 144, 16, COL_FFFFFF);
 	cursor_x = 8;
 	cursor_c = COL_FFFFFF;
 
 	sheet_slide(sheet_back, 0, 0);
 	sheet_slide(sheet_mouse, mx, my);
-	sheet_slide(sheet_win, 80, 72);	
+	sheet_slide(sheet_win, 80, 72);
+	sheet_slide(sheet_verwin, 300, 72);
 	sheet_updown(sheet_back, 0);
 	sheet_updown(sheet_win, 1);
-	sheet_updown(sheet_mouse, 2);
+	sheet_updown(sheet_verwin, 2);
+	sheet_updown(sheet_mouse, 3);
 
 	lsprintf(s, "memory %dMB   free : %dKB", memtotal / (1024*1024),
 				mem_total(memman) / 1024);
@@ -96,6 +102,9 @@ void Main() {
 	int t = (int)binfo->vram;
 	lsprintf(s, "VRAM = 0x%X", t);
 	putfont_sheet(sheet_back, 0, 0, COL_FFFFFF, COL_008484, s, 40);
+
+	lsprintf(s, "OS v0.01");
+	putfont_sheet(sheet_verwin, 10, 28, COL_000000, COL_C6C6C6, s, 13);
 
 	while(1) {
 		io_cli();
@@ -117,7 +126,7 @@ void Main() {
 						cursor_x += 8;
 					}
 				}
-				
+
 				// バックスペース
 				if(i == INT_KEYBOARD + 0x0e && cursor_x > 8) {
 					putfont_sheet(sheet_win, cursor_x, 28, COL_000000, COL_FFFFFF, " ", 1);
